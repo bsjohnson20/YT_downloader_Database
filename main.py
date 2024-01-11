@@ -8,7 +8,7 @@ from yt_dlp import YoutubeDL
 import dotenv as dot
 import csv
 import webbrowser
-
+import json
 # Kivy imports
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import ScreenManager, Screen
@@ -24,6 +24,14 @@ from kivymd.uix.gridlayout import GridLayout
 from kivymd.uix.card import MDCard
 from kivymd.uix.datatables import MDDataTable
 from kivy.metrics import dp
+from kivy.config import ConfigParser
+from kivy.uix.settings import SettingsWithSidebar
+
+
+
+
+
+
 
 class Manager(ScreenManager):
     def __init__(self, **kwargs):
@@ -56,10 +64,7 @@ class DatabaseOutputScreen(Screen):
     def on_row_press(self,  table, row):
         # get start index from selected row item range
         start_index, end_index = row.table.recycle_data[row.index]["range"]
-        print(start_index)
-        print(end_index)
         webbrowser.open(row.table.recycle_data[start_index+2]["text"])
-        #print(row.table.recycle_data[i]["text"])
         
     
     def generateData(self):
@@ -67,7 +72,6 @@ class DatabaseOutputScreen(Screen):
         c = conn.cursor()
         c.execute("SELECT * FROM videos")
         rows = c.fetchall()
-        print(rows)
         self.table.row_data = rows
         #self.table.update_row_data()
     
@@ -113,12 +117,40 @@ class YoutubeGUIApp(MDApp):
     def build(self):
         self.manager = Manager()
         self.theme_cls.theme_style = "Dark"
+        self.settings_cls = SettingsWithSidebar
+        # self.config.read('mysettings.ini')
         return self.manager
     
     def on_start(self):
         # change screen to home screen
         # inherit from download class
         self.downloader = ytdl_class.YoutubeNDatabaseDownloader()
+
+    def build_config(self, config):
+        config.setdefaults('Settings', {
+            'fullscreen': False,
+            'showdebug': False,
+            'downloadpath': '/home/lunachocken/Videos/YT',
+            'dbpath': '/home/lunachocken/Videos/YT/videos.db',
+            'randomnumber': '69420'
+        })
+        return super().build_config(config)
+
+    def build_settings(self, settings):
+
+        settings_json = json.dumps(
+    [
+        {'type':'title','title':'Settings'},
+        {'type':'bool','title':'Fullscreen','desc':'Set the window in windowed or fullscreen','section':'Settings','key':'fullscreen'},
+        {'type':'bool','title':'Show debug','desc':'Show debug','section':'Settings','key':'showdebug'},
+        {'type':'string','title':'Download Path','desc':'Path to where videos are downloaded','section':'Settings','key':'downloadpath'},
+        {'type':'string','title':'Database Path','desc':'Path to where the database is located','section':'Settings','key':'dbpath'},
+        {'type':'string','title':'Random Number','desc':'Random number','section':'Settings','key':'randomnumber'},
+    ])
+
+
+        settings.add_json_panel('Settings', self.config, data=settings_json)
+        '''The json file will be loaded and constructs the layout of the menu'''
 
 
 if __name__ == "__main__":
