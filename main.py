@@ -7,6 +7,9 @@ from yt_dlp import YoutubeDL
 # env file
 import dotenv as dot
 import csv
+import webbrowser
+
+# Kivy imports
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import ScreenManager, Screen
 import ytdownloader as ytdl_class
@@ -18,12 +21,65 @@ from kivy.properties import StringProperty
 from kivy.uix.widget import Widget
 from kivymd.uix.button import MDIconButton
 from kivymd.uix.gridlayout import GridLayout
+from kivymd.uix.card import MDCard
+from kivymd.uix.datatables import MDDataTable
+from kivy.metrics import dp
+
 class Manager(ScreenManager):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
         self.add_widget(HomeScreen(name='home'))
         self.add_widget(DownloadScreen(name='download'))
         self.add_widget(TestScreen(name='test'))
+        self.add_widget(DatabaseOutputScreen(name='output'))
+
+class DatabaseOutputScreen(Screen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        # table columns: name, url, channel, length
+        self.table = MDDataTable(
+            pos_hint={'center_x': 0.5, 'center_y': 0.5},
+            size_hint=(1, 0.9),
+            column_data=[
+                ("Name", dp(50)),
+                ("URL", (dp(30))),
+                ("Channel", dp(30)),
+                ("Length", dp(30)),
+            ],
+            use_pagination=True,
+            row_data=[],
+        )
+        self.table.bind(on_row_press=self.on_row_press)
+        self.ids.body.add_widget(self.table)
+        self.data = self.table.row_data
+
+    def on_row_press(self,  table, row):
+        # get start index from selected row item range
+        start_index, end_index = row.table.recycle_data[row.index]["range"]
+        print(start_index)
+        print(end_index)
+        webbrowser.open(row.table.recycle_data[start_index+2]["text"])
+        #print(row.table.recycle_data[i]["text"])
+        
+    
+    def generateData(self):
+        conn = sqlite3.connect('/home/lunachocken/Videos/YT/videos.db')
+        c = conn.cursor()
+        c.execute("SELECT * FROM videos")
+        rows = c.fetchall()
+        print(rows)
+        self.table.row_data = rows
+        #self.table.update_row_data()
+    
+    def clearData(self):
+        self.table.row_data = []
+        self.table.update_row_data(self.table,self.data)
+
+class ScrollTemplate(MDCard):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        # name, url, channel, length
+
 
 class Title(GridLayout):
     text = StringProperty()
