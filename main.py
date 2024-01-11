@@ -1,33 +1,20 @@
 # Python program to download youtube video, scrape name, channel, URL and store in a database
-import os
-import re
 import sqlite3
 import sys
-from kivymd.uix.button import MDFlatButton
-from yt_dlp import YoutubeDL
-# env file
-import dotenv as dot
-import csv
 import webbrowser
 import json
 # Kivy imports
 from kivymd.app import MDApp
 from kivy.uix.screenmanager import ScreenManager, Screen
 import ytdownloader as ytdl_class
-from kivy.properties import ObjectProperty
-from kivymd.uix.label import MDLabel
 from kivymd.uix.textfield import MDTextField
 from kivymd.uix.boxlayout import BoxLayout
 from kivy.properties import StringProperty
-from kivy.uix.widget import Widget
-from kivymd.uix.button import MDIconButton
 from kivymd.uix.gridlayout import GridLayout
 from kivymd.uix.card import MDCard
 from kivymd.uix.datatables import MDDataTable
 from kivy.metrics import dp
-from kivy.config import ConfigParser
 from kivy.uix.settings import SettingsWithSidebar
-from kivy.clock import Clock
 
 
 
