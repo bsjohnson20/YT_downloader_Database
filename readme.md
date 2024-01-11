@@ -1,53 +1,46 @@
-[initial readme using chatgpt]
+# YouTube Downloader with SQLite Database
 
-YouTube Downloader with Database
+Python program using Kivy and SQLite to download and store videos in a configurable location with saving to a SQLlite database.
 
-
-This is a Python program built using Kivy that allows users to download YouTube videos, scrape video information (name, channel, URL), and store the data in a SQLite database.
-Features
-
+## Features
     Download YouTube videos
     Extract video information (name, channel, URL)
     Store data in a SQLite database
     User-friendly GUI built with Kivy
 
-Getting Started
+## Getting Started
 Prerequisites
 
-    Python 3.8 or higher
-    Kivy 2.0 or higher
+python 3.10+
 
-Installation
+### Installation
 
-    Clone the repository:
+Clone repo:
+```bash
+git clone https://github.com/bsjohnson20/YT_downloader_Database
+```
 
-    bash
-
-git clone https://github.com/your-username/youtube-downloader.git
-
-Change into the project directory:
-
-bash
-
-cd youtube-downloader
+cd into repo
+```bash
+cd YT_downloader_Database```
 
 Install the required dependencies:
 
-bash
+```bash
+pip install -r requirements.txt```
 
-    pip install -r requirements.txt
-
-Usage
+## Usage
 
     Run the application:
 
-    bash
-
-    python main.py
+    ```bash
+    python main.py```
 
     The GUI will open, allowing you to interact with the application.
 
-Screenshots
+## Screenshots
+
+// todo
 
 License
 
