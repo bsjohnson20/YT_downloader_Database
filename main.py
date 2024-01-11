@@ -2,6 +2,7 @@
 import os
 import re
 import sqlite3
+import sys
 from kivymd.uix.button import MDFlatButton
 from yt_dlp import YoutubeDL
 # env file
@@ -26,6 +27,7 @@ from kivymd.uix.datatables import MDDataTable
 from kivy.metrics import dp
 from kivy.config import ConfigParser
 from kivy.uix.settings import SettingsWithSidebar
+from kivy.clock import Clock
 
 
 
@@ -40,6 +42,7 @@ class Manager(ScreenManager):
         self.add_widget(DownloadScreen(name='download'))
         self.add_widget(TestScreen(name='test'))
         self.add_widget(DatabaseOutputScreen(name='output'))
+        self.add_widget(AddDatabase(name='adddatabase'))
 
 class DatabaseOutputScreen(Screen):
     def __init__(self, **kw):
@@ -60,6 +63,10 @@ class DatabaseOutputScreen(Screen):
         self.table.bind(on_row_press=self.on_row_press)
         self.ids.body.add_widget(self.table)
         self.data = self.table.row_data
+    
+    def on_enter(self, *args):
+        self.generateData()
+        return super().on_enter(*args)
 
     def on_row_press(self,  table, row):
         # get start index from selected row item range
@@ -68,7 +75,9 @@ class DatabaseOutputScreen(Screen):
         
     
     def generateData(self):
-        conn = sqlite3.connect('/home/lunachocken/Videos/YT/videos.db')
+        # read db path from settings
+        self.dbpath = MDApp.get_running_app().config.get('Settings','dbpath')
+        conn = sqlite3.connect(self.dbpath)
         c = conn.cursor()
         c.execute("SELECT * FROM videos")
         rows = c.fetchall()
@@ -95,10 +104,49 @@ class TestScreen(Screen):
     pass
 
 class DownloadScreen(Screen):
-    pass
+    def __init__(self, **kw):
+        super().__init__(**kw)
+
+    def fetchall(self):
+        downloads=[]
+        for child in self.ids['scroll'].ids['scroll'].boxes.children:
+            if child.text != '':
+                downloads.append(child.text)
+        MDApp.get_running_app().downloader.download_videos(downloads)
+        # for widget in self.ids['scroll'].children:
+        #     print(widget.ids['title'].text)
+        #     print(widget.ids['url'].text)
+        #     print(widget.ids['channel'].text)
+        #     print(widget.ids['length'].text)
+        #     print()
+
+    def download(self):
+        self.fetchall()
+
+class AddDatabase(Screen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+
+    def fetchall(self):
+        downloads=[]
+        for child in self.ids['scroll'].ids['scroll'].boxes.children:
+            if child.text != '':
+                downloads.append(child.text)
+        MDApp.get_running_app().downloader.only_add_to_database(downloads)
+        # for widget in self.ids['scroll'].children:
+        #     print(widget.ids['title'].text)
+        #     print(widget.ids['url'].text)
+        #     print(widget.ids['channel'].text)
+        #     print(widget.ids['length'].text)
+        #     print()
+
+    def download(self):
+        self.fetchall()
+
 class URLScroll(BoxLayout):
     def add_entry(self):
         self.ids['buttonview'].add_widget(MDTextField(hint_text="Enter URL here", size_hint=(1, None), height=30, pos_hint={'center_x': 0.5, 'center_y': 0.5}))
+        self.buttonview = self.ids['buttonview']
 
 class HomeScreen(Screen):
     # have title, scrollable input field with + button to add more input fields and download button with progress bar
@@ -122,9 +170,12 @@ class YoutubeGUIApp(MDApp):
         return self.manager
     
     def on_start(self):
+        sys.stderr = open('./stderr', 'w')
         # change screen to home screen
         # inherit from download class
-        self.downloader = ytdl_class.YoutubeNDatabaseDownloader()
+        # read download path from settings
+        self.user_path = MDApp.get_running_app().config.get('Settings','downloadpath')
+        self.downloader = ytdl_class.YoutubeNDatabaseDownloader(user_path=self.user_path,database=self.user_path+'/videos.db')
 
     def build_config(self, config):
         config.setdefaults('Settings', {
