@@ -22,19 +22,22 @@ git clone https://github.com/bsjohnson20/YT_downloader_Database
 
 cd into repo
 ```bash
-cd YT_downloader_Database```
+cd YT_downloader_Database
+```
 
 Install the required dependencies:
 
 ```bash
-pip install -r requirements.txt```
+pip install -r requirements.txt
+```
 
 ## Usage
 
     Run the application:
 
     ```bash
-    python main.py```
+    python main.py
+    ```
 
     The GUI will open, allowing you to interact with the application.
 
