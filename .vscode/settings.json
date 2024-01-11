@@ -40,5 +40,6 @@
                 }
             }
         ]
-    }
+    },
+    "materialkv.pythonFile": "main.py"
 }

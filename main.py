@@ -1,166 +1,70 @@
 # Python program to download youtube video, scrape name, channel, URL and store in a database
 import os
+import re
 import sqlite3
+from kivymd.uix.button import MDFlatButton
 from yt_dlp import YoutubeDL
 # env file
 import dotenv as dot
-dot.load_dotenv()
+import csv
+from kivymd.app import MDApp
+from kivy.uix.screenmanager import ScreenManager, Screen
+import ytdownloader as ytdl_class
+from kivy.properties import ObjectProperty
+from kivymd.uix.label import MDLabel
+from kivymd.uix.textfield import MDTextField
+from kivymd.uix.boxlayout import BoxLayout
+from kivy.properties import StringProperty
+from kivy.uix.widget import Widget
+from kivymd.uix.button import MDIconButton
+from kivymd.uix.gridlayout import GridLayout
+class Manager(ScreenManager):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.add_widget(HomeScreen(name='home'))
+        self.add_widget(DownloadScreen(name='download'))
+        self.add_widget(TestScreen(name='test'))
 
-def download_video(url,quality='res:720 ',user_path='./videos/'):
-    if not os.path.exists(user_path):
-        os.makedirs(user_path)
-
-    ydl_opts = {
-        "format": "mp4[height=720]",
-        'outtmpl': f'{user_path}/YouTube/%(uploader)s/%(title)s.%(ext)s',
-    }
-    with YoutubeDL(ydl_opts) as ydl:
-        ydl.download([url])
+class Title(GridLayout):
+    text = StringProperty()
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
 
-def get_video_info(url):
-    # fetch name, channel, URL
-    ydl_opts = {'skip_download': True}
-    with YoutubeDL(ydl_opts) as ydl:
-        meta = ydl.extract_info(url, download=False)
-        name = meta['title']
-        channel = meta['uploader']
-        url = meta['webpage_url']
-        length = meta['duration']
-        return name, channel, url, length
+class TestScreen(Screen):
+    pass
+
+class DownloadScreen(Screen):
+    pass
+class URLScroll(BoxLayout):
+    def add_entry(self):
+        self.ids['buttonview'].add_widget(MDTextField(hint_text="Enter URL here", size_hint=(1, None), height=30, pos_hint={'center_x': 0.5, 'center_y': 0.5}))
+
+class HomeScreen(Screen):
+    # have title, scrollable input field with + button to add more input fields and download button with progress bar
+    def __init__(self, **kw):
+        super().__init__(**kw)
+    def on_enter(self, *args):
+        print("Entered Home Screen")
     
-if "__main__" == __name__:
-    # using dotenv to store environment variables
-
-    # check if dotenv file exists
-    if not os.path.exists('.env'):
-        print("No .env file found")
-        # create .env file
-        with open('.env','w') as f:
-            f.write("VIDEOS_PATH=./videos/")
-        print("Created .env file")
     
-    else:
-        # read from dotenv
-        dot.load_dotenv()
 
+class YoutubeGUIApp(MDApp):
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.title = "Youtube Downloader"
 
-    user_path = os.getenv('VIDEOS_PATH')
-    if not user_path:
-        user_path = './videos/'
-        os.environ['VIDEOS_PATH'] = user_path
-        print("Default path set to ./videos/")
-    else:
-        print(f"Default path set to {user_path}")
-
-    # create database
-    database = f"{user_path}/videos.db"
-    conn = sqlite3.connect(database)
-    c = conn.cursor()
-    c.execute('''CREATE TABLE IF NOT EXISTS videos
-                (name text, channel text, url text, length int)''')
-    conn.commit()
-    conn.close()
-
-    while True:
-        choice = input("1 - Download video/videos \n"
-                       "2 - Change download path \n"
-                       "3 - output database as csv \n"
-                       "4 - download videos from text file \n"
-                       "5 - only add to database\n"
-                       "6 - set default path\n"
-                       "7 - exit \n"
-                       "Choice: ")
-        
-        if choice == '1':
-            # get video/videos list of urls separated by space
-            urls = input("Enter video URL(s): ").split()
-            for url in urls:
-                # download video
-                download_video(url, user_path=user_path)
-
-                print("TESTING")
-                # get video info
-                name, channel, url, length = get_video_info(url)
-
-                # check if video url already exists in database
-                conn = sqlite3.connect(database)
-                c = conn.cursor()
-                c.execute("SELECT * FROM videos WHERE url=?",(url,))
-                if c.fetchone():
-                    print("Video already exists in database")
-                    continue
-                conn.close()
-                
-
-                # add to database
-                conn = sqlite3.connect(database)
-                c = conn.cursor()
-                c.execute("INSERT INTO videos VALUES (?,?,?,?)",(name, channel, url, length))
-                conn.commit()
-                conn.close()
-
-                print("Video added to database")
-        
-        elif choice == '2':
-            # set working directory
-            os.chdir(input("Enter path: "))
-            user_path = os.getcwd()
-            print(f"Working directory set to {user_path}")
-
-
-        
-        elif choice == '3':
-            # output database as csv
-            conn = sqlite3.connect(database)
-            c = conn.cursor()
-            c.execute("SELECT * FROM videos")
-            with open('videos.csv','w') as f:
-                for row in c.fetchall():
-                    f.write(f'{row[0]},{row[1]},{row[2]}\n')
-            print("Database output as csv")
-            conn.close()
-        
-        elif choice == '4':
-            # download videos from text file
-            with open('urls.txt','r') as f:
-                for url in f.readlines():
-                    url = url.strip()
-                    download_video(url)
-                    name, channel, url, length = get_video_info(url)
-                    conn = sqlite3.connect(database)
-                    c = conn.cursor()
-                    c.execute("INSERT INTO videos VALUES (?,?,?,?)",(name, channel, url, length))
-                    conn.commit()
-                    conn.close()
-            print("Videos added to database")
-
-        elif choice == '5':
-            # add video/videos to database
-            # support multiple videos separated by space
-            urls = input("Enter video URL(s): ").split()
-            for url in urls:
-                name, channel, url, length = get_video_info(url)
-                conn = sqlite3.connect(database)
-                c = conn.cursor()
-                c.execute("INSERT INTO videos VALUES (?,?,?,?)",(name, channel, url, length))
-                conn.commit()
-                conn.close()
-        
-        elif choice == '6':
-            # ask for default path
-            path = input("Enter default path: ")
-            os.environ['VIDEOS_PATH'] = path
-            print(f"Default path set to {path}")
-
-            # save to .env file
-            with open('.env','w') as f:
-                f.write(f"VIDEOS_PATH={path}")
-
-
-
-        elif choice == '7':
-            break
-        else:
-            print("Invalid choice")
+    def build(self):
+        self.manager = Manager()
+        self.theme_cls.theme_style = "Dark"
+        return self.manager
     
+    def on_start(self):
+        # change screen to home screen
+        # inherit from download class
+        self.downloader = ytdl_class.YoutubeNDatabaseDownloader()
+
+
+if __name__ == "__main__":
+    YoutubeGUIApp().run()
+    # downloader = YoutubeNDatabaseDownloader()
