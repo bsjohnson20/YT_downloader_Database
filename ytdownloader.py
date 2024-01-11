@@ -6,11 +6,15 @@ from yt_dlp import YoutubeDL
 import dotenv as dot
 import csv
 class YoutubeNDatabaseDownloader:
-    def __init__(self, user_path='./videos/') -> None:
+    def __init__(self, user_path='./videos/', database='./videos.db',cookie_file="./cookies") -> None:
         # method to check if .env file exists
         self.user_path = user_path
+        self.cookie_file = cookie_file
         self.check_env()
-        self.database = f"{os.getenv('VIDEOS_PATH')}/videos.db"
+        if user_path == './videos/':
+            self.database = f"{os.getenv('VIDEOS_PATH')}/videos.db"
+        else:
+            self.database = database
     def check_env(self):
         # check if .env file exists
         if (not os.path.exists('.env')):
@@ -38,7 +42,7 @@ class YoutubeNDatabaseDownloader:
         ydl_opts = {
             "format": "mp4[height<=720]",
             'outtmpl': f'{self.user_path}/YouTube/%(uploader)s/%(title)s.%(ext)s',
-            'cookiefile': '/home/lunachocken/Documents/Projects/YT_downloader_Database/cookies.txt',
+            'cookiefile': self.cookie_file,
             'verbose' : 'True'
         }
         with YoutubeDL(ydl_opts) as ydl:
@@ -47,7 +51,7 @@ class YoutubeNDatabaseDownloader:
     def get_video_info(self, url):
         # fetch name, channel, URL
         ydl_opts = {'skip_download': True,
-                    'cookiefile' : '/home/lunachocken/Documents/Projects/YT_downloader_Database/cookies.txt',}
+                    'cookiefile' : self.cookie_file,}
         with YoutubeDL(ydl_opts) as ydl:
             meta = ydl.extract_info(url, download=False)
             name = meta['title']
@@ -65,9 +69,11 @@ class YoutubeNDatabaseDownloader:
         conn.commit()
         conn.close()
 
-    def download_videos(self):
+    def download_videos(self,urls=[]):
         # get video/videos list of urls separated by space
-        urls = input("Enter video URL(s): ").split()
+        self.manual = False # update this to be class variable
+        if self.manual:
+            urls = input("Enter video URL(s): ").split()
         for url in urls:
             # download video
             self.download_video(url)
@@ -112,10 +118,11 @@ class YoutubeNDatabaseDownloader:
                 conn.close()
         print("Videos added to database")
 
-    def only_add_to_database(self):
+    def only_add_to_database(self,urls=[]):
         # add video/videos to database
         # support multiple videos separated by space
-        urls = input("Enter video URL(s): ").split()
+        if self.manual:
+            urls = input("Enter video URL(s): ").split()
         for url in urls:
             name, channel, url, length = self.get_video_info(url)
             conn = sqlite3.connect(self.database)

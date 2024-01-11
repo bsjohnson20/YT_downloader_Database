@@ -25,18 +25,32 @@
         on_release: app.open_settings()
 
 <URLScroll>:
+    id: urlscroll
+    orientation: 'vertical'
+    BoxLayout:
+        orientation: 'horizontal'
+        size_hint_y: 0.1
+        Button:
+            text: 'Add New Entry'
+            size_hint_y: None
+            height: 50
+            on_release: root.add_entry()
+        Button:
+            text: 'Download'
+            size_hint_y: None
+            height: 50
+            on_release: root.parent.parent.download()
     ScrollView:
+        size_hint: 1, 1
+        id: scroll
+        boxes: buttonview
         BoxLayout:
             id: buttonview
             orientation: 'vertical'
             size_hint_y: None
             height: self.minimum_height
             # Button to add new entry
-            Button:
-                text: 'Add New Entry'
-                size_hint_y: None
-                height: 50
-                on_release: root.add_entry()
+
 <TestScreen>:
     BoxLayout:
         orientation: "horizontal"
@@ -64,13 +78,9 @@
             Button:
                 text: "Download Video(s)"
                 on_release: root.manager.current = 'download'
-            Button:
-                text: "Change Download Path"
-            
-            Button:
-                text: "Download from text file"
             Button: 
                 text: "Add to database"
+                on_release: root.manager.current = 'adddatabase'
             Button:
                 text: "Output database"
                 on_release: root.manager.current = 'output'
@@ -102,7 +112,16 @@
                 size_hint_x: 0.5
                 on_release: root.clearData()
 
-            
+<AddDatabase>:
+    id: download
+    name: 'download'
+    BoxLayout:
+        orientation: 'vertical'
+        Title:
+            size_hint_y: 0.1
+            title_text: 'Download Video(s)'
+        URLScroll:
+            id: scroll
 
 
 
@@ -115,4 +134,5 @@
             size_hint_y: 0.1
             title_text: 'Download Video(s)'
         URLScroll:
+            id: scroll
         
