@@ -213,6 +213,9 @@ class YoutubeNDatabaseDownloader:
             for row in missing:
                 print(row)
             print("\n########################################\n")
+            return missing
+        else:
+            return []
 
     def init(self):
          # create database
