@@ -15,8 +15,7 @@ from kivymd.uix.card import MDCard
 from kivymd.uix.datatables import MDDataTable
 from kivy.metrics import dp
 from kivy.uix.settings import SettingsWithSidebar
-
-
+from kivy.clock import Clock
 
 
 
@@ -30,6 +29,7 @@ class Manager(ScreenManager):
         self.add_widget(TestScreen(name='test'))
         self.add_widget(DatabaseOutputScreen(name='output'))
         self.add_widget(AddDatabase(name='adddatabase'))
+        self.add_widget(MissingVideoScreen(name='missing'))
 
 class DatabaseOutputScreen(Screen):
     def __init__(self, **kw):
@@ -69,7 +69,6 @@ class DatabaseOutputScreen(Screen):
         c.execute("SELECT * FROM videos")
         rows = c.fetchall()
         self.table.row_data = rows
-        #self.table.update_row_data()
     
     def clearData(self):
         self.table.row_data = []
@@ -100,6 +99,7 @@ class DownloadScreen(Screen):
             if child.text != '':
                 downloads.append(child.text)
         MDApp.get_running_app().downloader.download_videos(downloads)
+        # create popup to show finished downloading
         # for widget in self.ids['scroll'].children:
         #     print(widget.ids['title'].text)
         #     print(widget.ids['url'].text)
@@ -110,6 +110,10 @@ class DownloadScreen(Screen):
     def download(self):
         self.fetchall()
 
+    def on_leave(self, *args):
+        # clear scrollview
+        self.ids['scroll'].ids['scroll'].boxes.clear_widgets()
+        return super().on_leave(*args)
 class AddDatabase(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -139,10 +143,82 @@ class HomeScreen(Screen):
     # have title, scrollable input field with + button to add more input fields and download button with progress bar
     def __init__(self, **kw):
         super().__init__(**kw)
+        self.details_data = [
+            # download path, database path
+            ("Download Path", MDApp.get_running_app().config.get('Settings','downloadpath')),
+            ("Database Path", MDApp.get_running_app().config.get('Settings','dbpath')),
+            ("Missing videos", "default"),
+        ]
+        self.columns = [
+            ("Name", dp(50)),
+            ("Data", (dp(90)))]
+
+        self.home_table = MDDataTable(
+            pos_hint={'center_x': 0.5, 'center_y': 0.5},
+            size_hint=(0.9, 0.6),
+            rows_num=4,
+            column_data=self.columns,
+            row_data=self.details_data,
+        )
+        Clock.schedule_once(self.update_missingVideos)
+        self.ids['data'].add_widget(self.home_table)
+
     def on_enter(self, *args):
-        print("Entered Home Screen")
+        pass
     
+    def missingDBvideos(self):
+        # set screen to missing videos screen
+        MDApp.get_running_app().manager.current = 'missing'
+
+
+
+    def update_missingVideos(self, *args):
+        number_missing = ("Missing videos", str(len(MDApp.get_running_app().downloader.missingDBvideos())))
+        # update table
+        self.home_table.row_data[2] = number_missing
+        # update details data
+        self.details_data[2] = number_missing
+
+class MissingVideoScreen(Screen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+        # table columns: name, url, channel, length
+        self.table = MDDataTable(
+            pos_hint={'center_x': 0.5, 'center_y': 0.5},
+            size_hint=(1, 0.9),
+            column_data=[
+                ("Name", dp(130))
+            ],
+            use_pagination=True,
+            row_data=[],
+        )
+        self.table.bind(on_row_press=self.on_row_press)
+        self.ids.body.add_widget(self.table)
+        self.data = self.table.row_data
+
+    def on_enter(self, *args):
+        # self.generateData()
+        return super().on_enter(*args)
+
+    def on_row_press(self,  table, row):
+        pass
+        # get start index from selected row item range
+        start_index, end_index = row.table.recycle_data[row.index]["range"]
+        webbrowser.open(row.table.recycle_data[start_index+2]["text"])
+
+    def generateData(self):
+        # read db path from settings
+        x = []
+        source_videos = MDApp.get_running_app().downloader.missingDBvideos()
+        for i in source_videos:
+            x.append((i,)) # what a weird workaround
+        self.data = x
+        self.table.update_row_data(self.table,self.data)
     
+    def clearData(self):
+        self.table.row_data = []
+        self.data = []
+        self.table.update_row_data(self.table,self.data)
 
 class YoutubeGUIApp(MDApp):
     def __init__(self, **kwargs):
@@ -168,8 +244,8 @@ class YoutubeGUIApp(MDApp):
         config.setdefaults('Settings', {
             'fullscreen': False,
             'showdebug': False,
-            'downloadpath': '/home/lunachocken/Videos/YT',
-            'dbpath': '/home/lunachocken/Videos/YT/videos.db',
+            'downloadpath': './',
+            'dbpath': './videos.db',
             'randomnumber': '69420'
         })
         return super().build_config(config)

@@ -2,7 +2,11 @@
     id: manager
     name: 'manager'
 
-
+# Custom button
+<CustomButton@MDRaisedButton>:
+    pos_hint: {"center_x": .5}
+    size_hint: None, None
+    width: root.width*0.4
         
 <Title>:
     cols: 3
@@ -30,12 +34,12 @@
     BoxLayout:
         orientation: 'horizontal'
         size_hint_y: 0.1
-        Button:
+        MDRaisedButton:
             text: 'Add New Entry'
             size_hint_y: None
             height: 50
             on_release: root.add_entry()
-        Button:
+        MDRaisedButton:
             text: 'Download'
             size_hint_y: None
             height: 50
@@ -57,6 +61,26 @@
         Title:
             text: "Test"
 
+<MissingVideoScreen>:
+    id: missing
+    name: 'missing'
+    BoxLayout:
+        orientation: 'vertical'
+        id: body
+        Title:
+            title_text: 'Missing Videos'
+        BoxLayout:
+            orientation: 'horizontal'
+            size_hint_y: 0.2
+            size_hint_x: 1
+            MDRaisedButton:
+                text: "generate"
+                on_release: root.generateData()
+                size_hint_x: 0.5
+            MDRaisedButton:
+                text: "clear"
+                size_hint_x: 0.5
+                on_release: root.clearData()
 
 <HomeScreen>:
     
@@ -75,18 +99,44 @@
             row_force_default: True
             padding: 10
             spacing: 10
-            Button:
+            MDRaisedButton:
                 text: "Download Video(s)"
                 on_release: root.manager.current = 'download'
-            Button: 
+                pos_hint: {"center_x": .5}
+                size_hint: None, None
+                width: root.width*0.4
+            MDRaisedButton: 
                 text: "Add to database"
                 on_release: root.manager.current = 'adddatabase'
-            Button:
+                hint_size_x: 0.5
+                pos_hint: {"center_x": .5}
+                size_hint: None, None
+                width: root.width*0.4
+            MDRaisedButton:
                 text: "Output database"
                 on_release: root.manager.current = 'output'
-            Button:
+                hint_size_x: 0.5
+                pos_hint: {"center_x": .5}
+                size_hint: None, None
+                width: root.width*0.4
+            MDRaisedButton:
+                text: 'Show Missing Videos'
+                on_release: root.manager.current = 'missing'
+                hint_size_x: 0.5
+                pos_hint: {"center_x": .5}
+                size_hint: None, None
+                width: root.width*0.4
+            MDRaisedButton:
                 text: "Exit"
                 on_release: app.stop()
+                hint_size_x: 0.5
+                pos_hint: {"center_x": .5}
+                size_hint: None, None
+                width: root.width*0.4
+
+        BoxLayout:
+            id: data
+
 
 
 
@@ -103,14 +153,16 @@
             orientation: 'horizontal'
             size_hint_y: 0.2
             size_hint_x: 1
-            MDFlatButton:
+            MDRaisedButton:
                 text: "generate"
                 on_release: root.generateData()
                 size_hint_x: 0.5
-            MDFlatButton:
+                padding: 5
+            MDRaisedButton:
                 text: "clear"
                 size_hint_x: 0.5
                 on_release: root.clearData()
+                padding: 5
 
 <AddDatabase>:
     id: download
