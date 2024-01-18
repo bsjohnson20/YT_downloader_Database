@@ -95,17 +95,15 @@ class DownloadScreen(Screen):
 
     def fetchall(self):
         downloads=[]
+        toast("Downloading started \
+              Screen will freeze.")
         for child in self.ids['scroll'].ids['scroll'].boxes.children:
             if child.text != '':
                 downloads.append(child.text)
         MDApp.get_running_app().downloader.download_videos(downloads)
-        # create popup to show finished downloading
-        # for widget in self.ids['scroll'].children:
-        #     print(widget.ids['title'].text)
-        #     print(widget.ids['url'].text)
-        #     print(widget.ids['channel'].text)
-        #     print(widget.ids['length'].text)
-        #     print()
+        toast("Download complete")
+        # clear scrollview
+        self.ids['scroll'].ids['scroll'].boxes.clear_widgets()
 
     def download(self):
         self.fetchall()
