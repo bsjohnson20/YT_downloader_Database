@@ -16,7 +16,7 @@ from kivymd.uix.datatables import MDDataTable
 from kivy.metrics import dp
 from kivy.uix.settings import SettingsWithSidebar
 from kivy.clock import Clock
-
+from kivymd.toast import toast
 
 
 
@@ -124,12 +124,6 @@ class AddDatabase(Screen):
             if child.text != '':
                 downloads.append(child.text)
         MDApp.get_running_app().downloader.only_add_to_database(downloads)
-        # for widget in self.ids['scroll'].children:
-        #     print(widget.ids['title'].text)
-        #     print(widget.ids['url'].text)
-        #     print(widget.ids['channel'].text)
-        #     print(widget.ids['length'].text)
-        #     print()
 
     def download(self):
         self.fetchall()
