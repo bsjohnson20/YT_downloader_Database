@@ -170,6 +170,7 @@ class HomeScreen(Screen):
         self.home_table.row_data[2] = number_missing
         # update details data
         self.details_data[2] = number_missing
+        
 
 class MissingVideoScreen(Screen):
     def __init__(self, **kw):

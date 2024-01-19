@@ -1,20 +1,4 @@
 # requirements.txt
-
-Brotli==1.1.0
-certifi==2023.11.17
-charset-normalizer==3.3.2
-docutils==0.20.1
-idna==3.6
-Kivy==2.3.0
-Kivy-Garden==0.1.5
 kivymd @ https://github.com/kivymd/KivyMD/archive/master.zip
-materialyoucolor==1.2.0
-mutagen==1.47.0
-pillow==10.2.0
-pycryptodomex==3.19.1
-Pygments==2.17.2
-python-dotenv==1.0.0
-requests==2.31.0
-urllib3==2.1.0
-websockets==12.0
 yt-dlp==2023.12.30
+python-dotenv
