@@ -1,10 +1,14 @@
 .env
+# just incase
 cookies.txt
+cookies
 venv/
+.venv/
 queries.sql
 __pycache__/ytdownloader.cpython-310.pyc
 youtubegui.ini
-cookies
+
 stderr
 luna_512.png
 .buildozer/
+videos.db

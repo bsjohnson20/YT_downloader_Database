@@ -6,15 +6,19 @@ from yt_dlp import YoutubeDL
 import dotenv as dot
 import csv
 class YoutubeNDatabaseDownloader:
-    def __init__(self, user_path='./videos/', database='./videos.db',cookie_file="./cookies") -> None:
+    def __init__(self, user_path='./videos/', database='./videos.db',cookie_file="./cookies",manual=False) -> None:
         # method to check if .env file exists
         self.user_path = user_path
         self.cookie_file = cookie_file
         self.check_env()
+        self.manual = False
         if user_path == './videos/':
             self.database = f"{os.getenv('VIDEOS_PATH')}/videos.db"
         else:
             self.database = database
+            
+        # Check if videos table exists in database
+        self.create_database()
     def check_env(self):
         # check if .env file exists
         if (not os.path.exists('.env')):
@@ -30,10 +34,10 @@ class YoutubeNDatabaseDownloader:
         if not user_path:
             user_path = './videos/'
             os.environ['VIDEOS_PATH'] = user_path
-            print("Default path set to ./videos/")
+            print("DOTENV - Default path set to ./videos/")
         else:
-            print(f"Default path set to {user_path}")
-            self.user_path = user_path
+            print(f"DOTENV - else: Default path set to {user_path}")
+            self.user_path = self.user_path
 
     def download_video(self, url):
         if not os.path.exists(self.user_path):
@@ -71,7 +75,7 @@ class YoutubeNDatabaseDownloader:
 
     def download_videos(self,urls=[]):
         # get video/videos list of urls separated by space
-        self.manual = False # update this to be class variable
+        # update this to be class variable
         if self.manual:
             urls = input("Enter video URL(s): ").split()
         for url in urls:
