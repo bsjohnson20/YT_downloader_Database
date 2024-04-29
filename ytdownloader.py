@@ -6,7 +6,7 @@ from yt_dlp import YoutubeDL
 import dotenv as dot
 import csv
 class YoutubeNDatabaseDownloader:
-    def __init__(self, user_path='./videos/', database='./videos.db',cookie_file="./cookies") -> None:
+    def __init__(self, user_path='./videos/', database='./videos.db',cookie_file="./cookies",manual=False) -> None:
         # method to check if .env file exists
         self.user_path = user_path
         self.cookie_file = cookie_file
@@ -73,7 +73,7 @@ class YoutubeNDatabaseDownloader:
 
     def download_videos(self,urls=[]):
         # get video/videos list of urls separated by space
-        self.manual = False # update this to be class variable
+        # update this to be class variable
         if self.manual:
             urls = input("Enter video URL(s): ").split()
         for url in urls:
