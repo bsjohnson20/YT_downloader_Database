@@ -34,16 +34,20 @@
     BoxLayout:
         orientation: 'horizontal'
         size_hint_y: 0.1
+        spacing: 5
+        padding: 5
         MDRaisedButton:
             text: 'Add New Entry'
             size_hint_y: None
             height: 50
             on_release: root.add_entry()
+            width: root.width*0.48
         MDRaisedButton:
             text: 'Download'
             size_hint_y: None
             height: 50
             on_release: root.parent.parent.download()
+            width: root.width*0.48
     ScrollView:
         size_hint: 1, 1
         id: scroll
@@ -87,6 +91,7 @@
     BoxLayout:
         orientation: 'vertical'
         pos_hint_x: {"center_x": .5}
+        pos_hint_y: {"center_y": .5}
         Title:
             size_hint_y: 0.1
             title_text: 'Home'
@@ -95,6 +100,7 @@
             id: grid
             cols: 2
             size_hint_y: 
+
             height: self.minimum_height
             row_default_height: 40
             row_force_default: True
@@ -106,35 +112,35 @@
                 on_release: root.manager.current = 'download'
                 pos_hint: {"center_x": .5}
                 size_hint: None, None
-                width: root.width*0.4
+                width: root.width*0.48
             MDRaisedButton: 
                 text: "Add to database"
                 on_release: root.manager.current = 'adddatabase'
                 hint_size_x: 0.5
                 pos_hint: {"center_x": .5}
                 size_hint: None, None
-                width: root.width*0.4
+                width: root.width*0.48
             MDRaisedButton:
                 text: "Output database"
                 on_release: root.manager.current = 'output'
                 hint_size_x: 0.5
                 pos_hint: {"center_x": .5}
                 size_hint: None, None
-                width: root.width*0.4
+                width: root.width*0.48
             MDRaisedButton:
                 text: 'Show Missing Videos'
                 on_release: root.manager.current = 'missing'
                 hint_size_x: 0.5
                 pos_hint: {"center_x": .5}
                 size_hint: None, None
-                width: root.width*0.4
+                width: root.width*0.48
             MDRaisedButton:
                 text: "Exit"
                 on_release: app.stop()
                 hint_size_x: 0.5
                 pos_hint: {"center_x": .5}
                 size_hint: None, None
-                width: root.width*0.4
+                width: root.width*0.48
 
         BoxLayout:
             id: data
