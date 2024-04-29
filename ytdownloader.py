@@ -12,10 +12,7 @@ class YoutubeNDatabaseDownloader:
         self.cookie_file = cookie_file
         self.manual = manual
         self.check_env()
-        # if user_path == './videos/':
-        #     self.database = f"{os.getenv('VIDEOS_PATH')}/videos.db"
-        # else:
-        #     self.database = database
+        self.create_database()
     def check_env(self):
         # check if .env file exists
         if (not os.path.exists('.env')):
@@ -28,7 +25,7 @@ class YoutubeNDatabaseDownloader:
         # read from dotenv
         dot.load_dotenv()
         user_path = os.getenv('VIDEOS_PATH')
-        if not user_path:
+        if user_path != './videos/' and user_path != None:
             user_path = './videos/'
             os.environ['VIDEOS_PATH'] = user_path
             print("Default path set to ./videos/")
@@ -65,13 +62,26 @@ class YoutubeNDatabaseDownloader:
 
     # create database
     def create_database(self):
+        # recursively create folder path if it doesn't exist
+        if not os.path.exists(self.user_path):
+            os.makedirs(self.user_path)
+            print(f"Created {self.user_path} directory")
+        
+        
         conn = sqlite3.connect(self.database)
         c = conn.cursor()
         c.execute('''CREATE TABLE IF NOT EXISTS videos
                     (name text, channel text, url text, length int)''')
         conn.commit()
         conn.close()
-
+        
+    def fetchall(self):
+        conn = sqlite3.connect(self.database)
+        c = conn.cursor()
+        c.execute("SELECT * FROM videos")
+        rows = c.fetchall()
+        return rows
+    
     def download_videos(self,urls=[]):
         # get video/videos list of urls separated by space
         # update this to be class variable
@@ -203,7 +213,14 @@ class YoutubeNDatabaseDownloader:
         if not os.path.exists(self.database):
             print("Database path is incorrect")
             input()
-            return
+        
+        # remove duplicate / special characters
+        self.database = re.sub(r"\/\/+","/",self.database)
+        
+        # test if folder exists
+        if not os.path.exists(self.user_path):
+            os.makedirs(self.user_path)
+            print(f"Created {self.user_path} directory")
         
         conn = sqlite3.connect(self.database)
         c = conn.cursor()
