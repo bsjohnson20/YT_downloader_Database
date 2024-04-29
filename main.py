@@ -99,7 +99,12 @@ class DownloadScreen(Screen):
               Screen will freeze.")
         for child in self.ids['scroll'].ids['scroll'].boxes.children:
             if child.text != '':
-                downloads.append(child.text)
+                if ' ' in child.text:
+                    for item in child.text.split(' '):
+                        downloads.append(item)
+                else:
+                    downloads.append(child.text)
+                # downloads.append(child.text)
         MDApp.get_running_app().downloader.download_videos(downloads)
         toast("Download complete")
         # clear scrollview

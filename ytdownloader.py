@@ -10,6 +10,7 @@ class YoutubeNDatabaseDownloader:
         # method to check if .env file exists
         self.user_path = user_path
         self.cookie_file = cookie_file
+        self.manual = manual
         self.check_env()
         # if user_path == './videos/':
         #     self.database = f"{os.getenv('VIDEOS_PATH')}/videos.db"
