@@ -193,7 +193,6 @@ class MissingVideoScreen(Screen):
         return super().on_enter(*args)
 
     def on_row_press(self,  table, row):
-        pass
         # get start index from selected row item range
         start_index, end_index = row.table.recycle_data[row.index]["range"]
         webbrowser.open(row.table.recycle_data[start_index+2]["text"])

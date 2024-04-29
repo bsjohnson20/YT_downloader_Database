@@ -11,10 +11,10 @@ class YoutubeNDatabaseDownloader:
         self.user_path = user_path
         self.cookie_file = cookie_file
         self.check_env()
-        if user_path == './videos/':
-            self.database = f"{os.getenv('VIDEOS_PATH')}/videos.db"
-        else:
-            self.database = database
+        # if user_path == './videos/':
+        #     self.database = f"{os.getenv('VIDEOS_PATH')}/videos.db"
+        # else:
+        #     self.database = database
     def check_env(self):
         # check if .env file exists
         if (not os.path.exists('.env')):
@@ -31,9 +31,11 @@ class YoutubeNDatabaseDownloader:
             user_path = './videos/'
             os.environ['VIDEOS_PATH'] = user_path
             print("Default path set to ./videos/")
+            self.database = r"./videos.db"
         else:
             print(f"Default path set to {user_path}")
             self.user_path = user_path
+            self.database = f"{user_path}/videos.db"
 
     def download_video(self, url):
         if not os.path.exists(self.user_path):
@@ -195,6 +197,13 @@ class YoutubeNDatabaseDownloader:
                     file = re.sub(r'[^\w\s]', '', file)
                     videos.append(file.strip('mp4'))
         # get all videos in database
+        
+        # test file path is correct for self.database
+        if not os.path.exists(self.database):
+            print("Database path is incorrect")
+            input()
+            return
+        
         conn = sqlite3.connect(self.database)
         c = conn.cursor()
         c.execute("SELECT * FROM videos")
