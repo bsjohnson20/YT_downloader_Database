@@ -64,10 +64,12 @@ class DatabaseOutputScreen(Screen):
     def generateData(self):
         # read db path from settings
         self.dbpath = MDApp.get_running_app().config.get('Settings','dbpath')
-        conn = sqlite3.connect(self.dbpath)
-        c = conn.cursor()
-        c.execute("SELECT * FROM videos")
-        rows = c.fetchall()
+        rows = MDApp.get_running_app().downloader.fetchall()
+        
+        # conn = sqlite3.connect(self.dbpath)
+        # c = conn.cursor()
+        # c.execute("SELECT * FROM videos")
+        # rows = c.fetchall()
         self.table.row_data = rows
     
     def clearData(self):
