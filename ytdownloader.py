@@ -9,19 +9,15 @@ class YoutubeNDatabaseDownloader:
     def __init__(self, user_path='./videos/', database='./videos.db',cookie_file="./cookies",manual=False) -> None:
         # method to check if .env file exists
         self.user_path = user_path
+        self.database = database
         self.cookie_file = cookie_file
         self.manual = manual
         self.check_env()
         self.create_database()
+        # print(self.user_path)
     def check_env(self):
-        # check if .env file exists
-        if (not os.path.exists('.env')):
-            print("No .env file found")
-            # create .env file
-            with open('.env','w') as f:
-                f.write("VIDEOS_PATH=./videos/")
-            print("Created .env file")
-
+        if self.user_path != './videos/':
+            return
         # read from dotenv
         dot.load_dotenv()
         user_path = os.getenv('VIDEOS_PATH')
@@ -289,3 +285,8 @@ class YoutubeNDatabaseDownloader:
                 break
             else:
                 print("Invalid choice")
+                
+                
+if __name__ == "__main__":
+    y = YoutubeNDatabaseDownloader()
+    y.choices()
