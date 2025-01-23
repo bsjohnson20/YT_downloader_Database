@@ -3,7 +3,7 @@
     name: 'manager'
 
 # Custom button
-<CustomButton@MDRaisedButton>:
+<CustomButton@MDButton>:
     pos_hint: {"center_x": .5}
     size_hint: None, None
     width: root.width*0.4
@@ -36,18 +36,22 @@
         size_hint_y: 0.1
         spacing: 5
         padding: 5
-        MDRaisedButton:
-            text: 'Add New Entry'
+        MDButton:
+            style: "elevated"
             size_hint_y: None
             height: 50
             on_release: root.add_entry()
             width: root.width*0.48
-        MDRaisedButton:
-            text: 'Download'
+            MDButtonText:
+                text: "Add New Entry"
+        MDButton:
+            style: "elevated"
             size_hint_y: None
             height: 50
             on_release: root.parent.parent.download()
             width: root.width*0.48
+            MDButtonText:
+                text: 'Download'
     ScrollView:
         size_hint: 1, 1
         id: scroll
@@ -77,17 +81,20 @@
             orientation: 'horizontal'
             size_hint_y: 0.2
             size_hint_x: 1
-            MDRaisedButton:
-                text: "generate"
+            MDButton:
+                style: "elevated"
                 on_release: root.generateData()
                 size_hint_x: 0.5
-            MDRaisedButton:
-                text: "clear"
+                MDButtonText:
+                    text: "generate"
+            MDButton:
+                style: "elevated"
                 size_hint_x: 0.5
                 on_release: root.clearData()
+                MDButtonText:
+                    text: "clear"
 
 <HomeScreen>:
-    
     BoxLayout:
         orientation: 'vertical'
         pos_hint_x: {"center_x": .5}
@@ -107,40 +114,56 @@
             padding: 10
             spacing: 10
             pos_hint_x: {"center_x": .5}
-            MDRaisedButton:
-                text: "Download Video(s)"
+            MDButton:
+                style: "elevated"
                 on_release: root.manager.current = 'download'
+                #on_release: print(self.text)
                 pos_hint: {"center_x": .5}
-                size_hint: None, None
+                #size_hint: None, None
                 width: root.width*0.48
-            MDRaisedButton: 
-                text: "Add to database"
+                MDButtonText:
+                    text: "Download Video(s)"
+
+            MDButton:
+                style: "elevated" 
+                
                 on_release: root.manager.current = 'adddatabase'
                 hint_size_x: 0.5
                 pos_hint: {"center_x": .5}
                 size_hint: None, None
                 width: root.width*0.48
-            MDRaisedButton:
-                text: "Output database"
+                MDButtonText:
+                    text: "Add to database"
+            MDButton:
+                style: "elevated"
+                
                 on_release: root.manager.current = 'output'
                 hint_size_x: 0.5
                 pos_hint: {"center_x": .5}
                 size_hint: None, None
                 width: root.width*0.48
-            MDRaisedButton:
-                text: 'Show Missing Videos'
+                MDButtonText:
+                    text: "Output database"
+            MDButton:
+                style: "elevated"
+                
                 on_release: root.manager.current = 'missing'
                 hint_size_x: 0.5
                 pos_hint: {"center_x": .5}
                 size_hint: None, None
                 width: root.width*0.48
-            MDRaisedButton:
-                text: "Exit"
+                MDButtonText:
+                    text: 'Show Missing Videos'
+            MDButton:
+                style: "elevated"
+                
                 on_release: app.stop()
                 hint_size_x: 0.5
                 pos_hint: {"center_x": .5}
                 size_hint: None, None
                 width: root.width*0.48
+                MDButtonText:
+                    text: "Exit"
 
         BoxLayout:
             id: data
@@ -161,16 +184,22 @@
             orientation: 'horizontal'
             size_hint_y: 0.2
             size_hint_x: 1
-            MDRaisedButton:
-                text: "generate"
+            MDButton:
+                style: "elevated"
+                
                 on_release: root.generateData()
                 size_hint_x: 0.5
                 padding: 5
-            MDRaisedButton:
-                text: "clear"
+                MDButtonText:
+                    text: "generate"
+            MDButton:
+                style: "elevated"
+                
                 size_hint_x: 0.5
                 on_release: root.clearData()
                 padding: 5
+                MDButtonText:
+                    text: "clear"
 
 <AddDatabase>:
     id: download

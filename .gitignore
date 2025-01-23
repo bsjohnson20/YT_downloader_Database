@@ -7,9 +7,7 @@ venv/
 queries.sql
 __pycache__/ytdownloader.cpython-310.pyc
 youtubegui.ini
-
 stderr
-luna_512.png
 .buildozer/
 videos.db
 videos/

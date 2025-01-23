@@ -1,0 +1,15 @@
+[project]
+name = "yt-downloader-database"
+version = "0.1.1"
+description = "Python program using Kivy and SQLite to download and store videos in a configurable location with saving to a SQLlite database."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "kivy==2.3.0",
+    "kivymd>=1.2.0",
+    "python-dotenv>=1.0.1",
+    "yt-dlp>=2025.1.15",
+]
+
+[tool.uv.sources]
+kivymd = { url = "https://github.com/kivymd/KivyMD/archive/master.zip" }

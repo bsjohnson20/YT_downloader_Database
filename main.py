@@ -12,11 +12,12 @@ from kivymd.uix.boxlayout import BoxLayout
 from kivy.properties import StringProperty
 from kivymd.uix.gridlayout import GridLayout
 from kivymd.uix.card import MDCard
-from kivymd.uix.datatables import MDDataTable
+# from kivymd.uix.datatables import MDDataTable
+from datatables import MDDataTable
 from kivy.metrics import dp
 from kivy.uix.settings import SettingsWithSidebar
 from kivy.clock import Clock
-from kivymd.toast import toast
+# from kivymd.toast import toast
 
 
 
@@ -97,8 +98,8 @@ class DownloadScreen(Screen):
 
     def fetchall(self):
         downloads=[]
-        toast("Downloading started \
-              Screen will freeze.")
+        # toast("Downloading started \
+        #       Screen will freeze.")
         for child in self.ids['scroll'].ids['scroll'].boxes.children:
             if child.text != '':
                 if ' ' in child.text:
@@ -108,7 +109,7 @@ class DownloadScreen(Screen):
                     downloads.append(child.text)
                 # downloads.append(child.text)
         MDApp.get_running_app().downloader.download_videos(downloads)
-        toast("Download complete")
+        # toast("Download complete")
         # clear scrollview
         self.ids['scroll'].ids['scroll'].boxes.clear_widgets()
 
