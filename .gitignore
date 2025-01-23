@@ -5,7 +5,7 @@ cookies
 venv/
 .venv/
 queries.sql
-__pycache__/ytdownloader.cpython-310.pyc
+__pycache__/
 youtubegui.ini
 stderr
 .buildozer/
