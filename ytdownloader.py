@@ -38,7 +38,7 @@ class YoutubeNDatabaseDownloader:
         ydl_opts = {
             "format": "mp4[height<=720]",
             'outtmpl': f'{self.user_path}/YouTube/%(uploader)s/%(title)s.%(ext)s',
-            'cookiefile': self.cookie_file,
+            'cookiesfrombrowser': ('firefox', None, None, None),
             'verbose' : 'True'
         }
         with YoutubeDL(ydl_opts) as ydl:
@@ -47,7 +47,7 @@ class YoutubeNDatabaseDownloader:
     def get_video_info(self, url):
         # fetch name, channel, URL
         ydl_opts = {'skip_download': True,
-                    'cookiefile' : self.cookie_file,}
+                    'cookiesfrombrowser': ('firefox', None, None, None)}
         with YoutubeDL(ydl_opts) as ydl:
             meta = ydl.extract_info(url, download=False)
             name = meta['title']

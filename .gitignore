@@ -11,3 +11,5 @@ stderr
 .buildozer/
 videos.db
 videos/
+Youtube/
+__pycache__/
