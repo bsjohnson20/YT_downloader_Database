@@ -31,6 +31,7 @@ class Manager(ScreenManager):
         self.add_widget(DatabaseOutputScreen(name='output'))
         self.add_widget(AddDatabase(name='adddatabase'))
         self.add_widget(MissingVideoScreen(name='missing'))
+        self.add_widget(DownloadAudioScreen(name='audio'))
 
 class DatabaseOutputScreen(Screen):
     def __init__(self, **kw):
@@ -178,6 +179,35 @@ class HomeScreen(Screen):
         self.home_table.row_data[2] = number_missing
         # update details data
         self.details_data[2] = number_missing
+        
+class DownloadAudioScreen(Screen):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+
+    def fetchall(self): # audio version
+        downloads=[]
+        # toast("Downloading started \
+        #       Screen will freeze.")
+        for child in self.ids['scroll'].ids['scroll'].boxes.children:
+            if child.text != '':
+                if ' ' in child.text:
+                    for item in child.text.split(' '):
+                        downloads.append(item)
+                else:
+                    downloads.append(child.text)
+                # downloads.append(child.text)
+        MDApp.get_running_app().downloader.download_audio(' '.join(downloads))
+        # toast("Download complete")
+        # clear scrollview
+        self.ids['scroll'].ids['scroll'].boxes.clear_widgets()
+        
+    def download(self):
+        self.fetchall()
+
+    def on_leave(self, *args):
+        # clear scrollview
+        self.ids['scroll'].ids['scroll'].boxes.clear_widgets()
+        return super().on_leave(*args)
         
 
 class MissingVideoScreen(Screen):

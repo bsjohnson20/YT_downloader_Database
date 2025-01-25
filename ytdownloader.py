@@ -78,14 +78,17 @@ class YoutubeNDatabaseDownloader:
         rows = c.fetchall()
         return rows
     
-    def download_videos(self,urls=[]):
+    def download_videos(self,urls=[],audio=False):
         # get video/videos list of urls separated by space
         # update this to be class variable
         if self.manual:
             urls = input("Enter video URL(s): ").split()
         for url in urls:
-            # download video
-            self.download_video(url)
+            # download 
+            if audio:
+                self.download_audio(url)
+            else:
+                self.download_video(url)
             # get video info
             name, channel, url, length = self.get_video_info(url)
             # add to database
@@ -160,6 +163,23 @@ class YoutubeNDatabaseDownloader:
         # update database path
         self.database = f"{path}/videos.db"
         self.user_path = path
+
+    def download_audio(self, url):
+        ydl_opts = {'format': 'bestaudio/best',
+                    'postprocessors': [{
+                        'key': 'FFmpegExtractAudio',
+                        'preferredcodec': 'mp3',
+                        'preferredquality': '192',
+                    }],
+                    'outtmpl': f'{self.user_path}/YouTube/%(uploader)s/%(title)s.%(ext)s',
+                    'cookiesfrombrowser': ('firefox', None, None, None)}
+        # try:
+        with YoutubeDL(ydl_opts) as ydl:
+            ydl.download([url])
+        # except Exception as e:
+        #     # temp catchall error handler
+        #     print(f"Error downloading audio: {e}, likely missing ffmpeg")
+            
 
     def print_database(self):
         conn = sqlite3.connect(self.database)
@@ -258,6 +278,7 @@ class YoutubeNDatabaseDownloader:
                         "6 - set default path\n"
                         "7 - print database\n"
                         "8 - exit \n"
+                        "9 - download audio\n"
                         "Choice: ")
 
             if choice == '1':
@@ -283,10 +304,12 @@ class YoutubeNDatabaseDownloader:
 
             elif choice == '8':
                 break
+            elif choice == '9':
+                self.download_videos([input("Enter video URL: ")],audio=True)
             else:
                 print("Invalid choice")
                 
                 
 if __name__ == "__main__":
-    y = YoutubeNDatabaseDownloader()
+    y = YoutubeNDatabaseDownloader('./')
     y.choices()

@@ -125,6 +125,17 @@
                     text: "Download Video(s)"
 
             MDButton:
+                style: "elevated"
+                
+                on_release: root.manager.current = 'audio'
+                hint_size_x: 0.5
+                pos_hint: {"center_x": .5}
+                size_hint: None, None
+                width: root.width*0.48
+                MDButtonText:
+                    text: "Download audio(s)"
+
+            MDButton:
                 style: "elevated" 
                 
                 on_release: root.manager.current = 'adddatabase'
@@ -224,4 +235,16 @@
             title_text: 'Download Video(s)'
         URLScroll:
             id: scroll
+
+<DownloadAudioScreen>:
+    id: download
+    name: 'download'
+    BoxLayout:
+        orientation: 'vertical'
+        Title:
+            size_hint_y: 0.1
+            title_text: 'Download Audio(s)'
+        URLScroll:
+            id: scroll
+
         
