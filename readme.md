@@ -198,7 +198,7 @@ See the [open issues](https://github.com/bsjohnson20/YT_downloader_Database/issu
 - [  ] Missing video yt search and user selection
 - [  ] Add DB editing
 - [  ] Add DB search
-
+- [  ] Android App (On hold due to YTDLP causing issues)
 <!-- CONTRIBUTING -->
 ## Contributing
 
