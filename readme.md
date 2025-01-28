@@ -82,6 +82,9 @@
 
 <!-- ABOUT THE PROJECT -->
 ## About The Project
+This is a YT Downloader GUI wrapper that utilises Kivy and KivyMD to provide a user friendly interface for downloading youtube videos. The project also includes a CLI version in addition to help prototype features quicker.
+
+It uses YT-DLP on the backend and thus can be used on more than just youtube. The data from YT-DLP is stored in a sqlite database for cataloging and archiving purposes.
 
 
 [![YT Downloader DB Screen Shot][product-screenshot]]
@@ -109,7 +112,6 @@
 
 ### Prerequisites
 
-This is an example of how to list things you need to use the software and how to install them.
 * uv - https://docs.astral.sh/uv/getting-started/installation/
   ```sh
   # mac/linux
@@ -150,9 +152,27 @@ This is an example of how to list things you need to use the software and how to
 <!-- USAGE EXAMPLES -->
 ## Usage
 
-Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+6 main functions are available in the GUI:
+1. Download Video
+2. Download Audio
+3. Add to DB (no download)
+4. Print DB
+5. Find videos missing in DB present in the download folder
+6. Exit
 
-_For more examples, please refer to the [Documentation](https://example.com)_
+### Example Download
+1. Click on the "Download Video" button
+2. Add new entry
+3. Paste the URL of the video into text box
+4. Click "Download"
+
+![Download preview](images/DownloadPreview.png)
+
+
+
+<!-- Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
+
+_For more examples, please refer to the [Documentation](https://example.com)_ -->
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -171,7 +191,13 @@ See the [open issues](https://github.com/bsjohnson20/YT_downloader_Database/issu
 <p align="right">(<a href="#readme-top">back to top</a>)</p> 
 -->
 
+## Todo
 
+- [  ] Add quality to settings menu
+- [  ] Add async download and progress bar
+- [  ] Missing video yt search and user selection
+- [  ] Add DB editing
+- [  ] Add DB search
 
 <!-- CONTRIBUTING -->
 ## Contributing
