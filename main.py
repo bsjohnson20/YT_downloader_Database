@@ -18,9 +18,15 @@ from kivy.metrics import dp
 from kivy.uix.settings import SettingsWithSidebar
 from kivy.clock import Clock
 # from kivymd.toast import toast
+from kivy.uix.progressbar import ProgressBar
 
+# Experimental likely to cause issues
+import asyncio
+from kivy.app import async_runTouchApp
+import threading
 
-
+import re
+from kivymd.uix.progressindicator import MDLinearProgressIndicator
 
 class Manager(ScreenManager):
     def __init__(self, **kwargs):
@@ -97,11 +103,55 @@ class DownloadScreen(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
 
-    def fetchall(self):
+    
+    def on_enter(self, *args):
+        
+        # create progress bar
+        # self.pb = ProgressBar(max=1000, size_hint=(1, None), height=30, pos_hint={'center_x': 0.5, 'center_y': 0.5})
+        
+        # add progress bar to scrollview
+        
+        self.pb = MDLinearProgressIndicator(max=100, value=0)
+        self.pb.size_hint = (1, None)
+        self.pb.height = 30
+        self.pb.pos_hint = {'center_x': 0.5, 'center_y': 0.5}
+        self.ids['scroll'].ids['scroll'].boxes.add_widget(self.pb)
+        return super().on_enter(*args)
+        
+    def hook(self, *args):
+        # add progress bar
+        percent = float(args[0]['_percent_str'].split('m')[1].split('%')[0])
+        
+        # debugging
+        # with open('stderr2', 'a') as f:
+        #     f.write("\n"+str(percent))
+        # print(percent)
+
+        if args[0]['status'] == 'downloading':
+            self.pb.value = percent
+            
+        elif args[0]['status'] == 'finished':
+            self.pb.value = 100
+            # delete kids
+            for child in self.ids['scroll'].ids['scroll'].boxes.children:
+                if child != self.pb:
+                    self.ids['scroll'].ids['scroll'].boxes.remove_widget(child)
+        elif args[0]['status'] == 'error':
+            self.pb.value = 0
+        else:
+            self.pb.value = 0
+        
+            
+
+    def fetchall(self, *args):
+        print("Video Download Started")
         downloads=[]
+        
         # toast("Downloading started \
         #       Screen will freeze.")
         for child in self.ids['scroll'].ids['scroll'].boxes.children:
+            if child == self.pb:
+                continue
             if child.text != '':
                 if ' ' in child.text:
                     for item in child.text.split(' '):
@@ -109,13 +159,22 @@ class DownloadScreen(Screen):
                 else:
                     downloads.append(child.text)
                 # downloads.append(child.text)
-        MDApp.get_running_app().downloader.download_videos(downloads)
+        
+        # MDApp.get_running_app().downloader.download_videos(downloads)
+        print(downloads)
+        MDApp.get_running_app().downloader.download_videos(downloads, hook=self.hook, audio=False)
         # toast("Download complete")
         # clear scrollview
         self.ids['scroll'].ids['scroll'].boxes.clear_widgets()
 
+
     def download(self):
-        self.fetchall()
+        threading.Thread(target=self.fetchall).start()
+
+
+    
+        
+            
 
     def on_leave(self, *args):
         # clear scrollview
@@ -184,8 +243,9 @@ class DownloadAudioScreen(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
 
-    def fetchall(self): # audio version
+    async def fetchall(self): # audio version
         downloads=[]
+        print("Downloading started Audio")
         # toast("Downloading started \
         #       Screen will freeze.")
         for child in self.ids['scroll'].ids['scroll'].boxes.children:
@@ -298,5 +358,11 @@ class YoutubeGUIApp(MDApp):
 
 
 if __name__ == "__main__":
-    YoutubeGUIApp().run()
+    runAsync = True
+    if runAsync:
+        loop = asyncio.get_event_loop()
+        loop.run_until_complete(async_runTouchApp(YoutubeGUIApp().run()))
+        loop.close()
+    else:
+        YoutubeGUIApp().run()
     # downloader = YoutubeNDatabaseDownloader()

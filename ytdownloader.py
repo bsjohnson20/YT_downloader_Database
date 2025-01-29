@@ -5,6 +5,11 @@ from yt_dlp import YoutubeDL
 # env file
 import dotenv as dot
 import csv
+import asyncio
+# Downloading background
+from threading import Thread
+
+
 class YoutubeNDatabaseDownloader:
     def __init__(self, user_path='./videos/', database='./videos.db',cookie_file="./cookies",manual=False) -> None:
         # method to check if .env file exists
@@ -14,6 +19,10 @@ class YoutubeNDatabaseDownloader:
         self.manual = manual
         self.check_env()
         self.create_database()
+        
+        self.status = 'idle'
+        
+        
         # print(self.user_path)
     def check_env(self):
         if self.user_path != './videos/':
@@ -30,8 +39,19 @@ class YoutubeNDatabaseDownloader:
             print(f"Default path set to {user_path}")
             self.user_path = user_path
             self.database = f"{user_path}/videos.db"
+            
+    def hook(self,d):
+        if d['status'] == 'downloading':
+            print(d['filename'], d['_percent_str'])
+        if d['status'] == 'finished':
+            self.status = 'finished'
 
-    def download_video(self, url):
+
+
+    async def download_video(self, url, hook=None):
+        if hook == None:
+            hook = self.hook
+        print(f"Hook is {hook}")
         if not os.path.exists(self.user_path):
             os.makedirs(self.user_path)
 
@@ -42,7 +62,34 @@ class YoutubeNDatabaseDownloader:
             'verbose' : 'True'
         }
         with YoutubeDL(ydl_opts) as ydl:
+            ydl._progress_hooks.append(hook)
             ydl.download([url])
+            
+            while self.status == 'downloading':
+                await asyncio.sleep(1)
+    
+    async def download_audio(self, url,hook=None):
+        if hook == None:
+            hook = self.hook
+        ydl_opts = {'format': 'bestaudio/best',
+                    'postprocessors': [{
+                        'key': 'FFmpegExtractAudio',
+                        'preferredcodec': 'mp3',
+                        'preferredquality': '192',
+                    }],
+                    'outtmpl': f'{self.user_path}/YouTube/%(uploader)s/%(title)s.%(ext)s',
+                    'cookiesfrombrowser': ('firefox', None, None, None)}
+        # try:
+        with YoutubeDL(ydl_opts) as ydl:
+           ydl._progress_hooks.append(hook)
+           ydl.download([url])
+            
+           while self.status == 'downloading':
+               await asyncio.sleep(1)
+            
+        # except Exception as e:
+        #     # temp catchall error handler
+        #     print(f"Error downloading audio: {e}, likely missing ffmpeg")
 
     def get_video_info(self, url):
         # fetch name, channel, URL
@@ -78,17 +125,25 @@ class YoutubeNDatabaseDownloader:
         rows = c.fetchall()
         return rows
     
-    def download_videos(self,urls=[],audio=False):
+    def download_videos(self,urls=[],audio=False,hook=None):
+        print(f"Downloading, audio: {audio}")
         # get video/videos list of urls separated by space
         # update this to be class variable
         if self.manual:
             urls = input("Enter video URL(s): ").split()
         for url in urls:
             # download 
+            self.status = 'downloading'
             if audio:
-                self.download_audio(url)
+                
+                asyncio.run(self.download_audio(url,hook=hook))
+                while self.status == 'downloading':
+                    pass
             else:
-                self.download_video(url)
+                asyncio.run(self.download_video(url,hook=hook))
+                # self.download_video(url)
+                while self.status == 'downloading':
+                    pass
             # get video info
             name, channel, url, length = self.get_video_info(url)
             # add to database
@@ -164,21 +219,7 @@ class YoutubeNDatabaseDownloader:
         self.database = f"{path}/videos.db"
         self.user_path = path
 
-    def download_audio(self, url):
-        ydl_opts = {'format': 'bestaudio/best',
-                    'postprocessors': [{
-                        'key': 'FFmpegExtractAudio',
-                        'preferredcodec': 'mp3',
-                        'preferredquality': '192',
-                    }],
-                    'outtmpl': f'{self.user_path}/YouTube/%(uploader)s/%(title)s.%(ext)s',
-                    'cookiesfrombrowser': ('firefox', None, None, None)}
-        # try:
-        with YoutubeDL(ydl_opts) as ydl:
-            ydl.download([url])
-        # except Exception as e:
-        #     # temp catchall error handler
-        #     print(f"Error downloading audio: {e}, likely missing ffmpeg")
+    
             
 
     def print_database(self):
@@ -282,7 +323,7 @@ class YoutubeNDatabaseDownloader:
                         "Choice: ")
 
             if choice == '1':
-                self.download_videos()
+                self.download_videos(audio=False)
 
             elif choice == '2':
                 self.change_download_path()
@@ -311,5 +352,5 @@ class YoutubeNDatabaseDownloader:
                 
                 
 if __name__ == "__main__":
-    y = YoutubeNDatabaseDownloader('./')
+    y = YoutubeNDatabaseDownloader('./',manual=True)
     y.choices()
