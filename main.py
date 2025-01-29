@@ -20,6 +20,17 @@ from kivy.clock import Clock
 # from kivymd.toast import toast
 from kivy.uix.progressbar import ProgressBar
 
+from kivy import platform
+if platform == 'android':
+    from kivymd.toast import toast
+    from android.permissions import request_permissions, Permission, check_permission  # pylint: disable=import-error # type: ignore
+    request_permissions([Permission.READ_EXTERNAL_STORAGE,
+                        Permission.WRITE_EXTERNAL_STORAGE])
+elif platform == 'linux':
+    from kivymd.uix.snackbar.snackbar import MDSnackbar, MDSnackbarSupportingText
+else:
+    pass
+
 # Experimental likely to cause issues
 import asyncio
 from kivy.app import async_runTouchApp
@@ -27,6 +38,8 @@ import threading
 
 import re
 from kivymd.uix.progressindicator import MDLinearProgressIndicator
+
+
 
 class Manager(ScreenManager):
     def __init__(self, **kwargs):
@@ -84,6 +97,7 @@ class DatabaseOutputScreen(Screen):
         self.table.row_data = []
         self.table.update_row_data(self.table,self.data)
 
+
 class ScrollTemplate(MDCard):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -99,12 +113,70 @@ class Title(GridLayout):
 class TestScreen(Screen):
     pass
 
-class DownloadScreen(Screen):
+
+class Hook:
+    def hook(self, *args):
+        # add progress bar
+        percent = float(args[0]['_percent_str'].split('m')[1].split('%')[0])
+        
+        # debugging
+        # with open('stderr2', 'a') as f:
+        #     f.write("\n"+str(percent))
+        # print(percent)
+
+        if args[0]['status'] == 'downloading':
+            self.pb.value = percent
+            print(percent)
+            
+        elif args[0]['status'] == 'finished':
+            
+            # Toast download complete
+            # toast("Download complete")
+            self.snackbar.update_text("Download complete")
+            # with open('stderr2', 'a') as f:
+            #     f.writelines(("\nDownload complete", str(percent), str(args)))
+                
+            Clock.schedule_once(self.snackbar.open)
+            
+            self.pb.value = 100
+            # delete kids
+            for child in self.ids['scroll'].ids['scroll'].boxes.children:
+                if child != self.pb:
+                    self.ids['scroll'].ids['scroll'].boxes.remove_widget(child)
+        elif args[0]['status'] == 'error':
+            self.pb.value = 100
+            self.snackbar.update_text("Download Failed")
+            Clock.schedule_once(self.snackbar.open)           
+        else:
+            self.pb.value = 0
+            self.snackbar.update_text("Unknown error")
+            Clock.schedule_once(self.snackbar.open)
+        
+
+class SnackBar(MDSnackbar):
+    def __init__(self, text,**kwargs):
+        super().__init__(**kwargs)
+        self.text = text
+        self.duration = 2
+        self.gravity = 'top'
+        self.snackbar = MDSnackbarSupportingText(text=self.text)
+        self.add_widget(self.snackbar)
+    def open(self,*args):
+        return super().open()
+    def update_text(self, text):
+        self.snackbar.text = text
+
+class DownloadScreen(Screen, Hook):
     def __init__(self, **kw):
         super().__init__(**kw)
+        self.toast_text = ""
+        # create snackbar but don't show it
+        self.snackbar = SnackBar(text=self.toast_text)
+        
 
     
     def on_enter(self, *args):
+        
         
         # create progress bar
         # self.pb = ProgressBar(max=1000, size_hint=(1, None), height=30, pos_hint={'center_x': 0.5, 'center_y': 0.5})
@@ -118,29 +190,7 @@ class DownloadScreen(Screen):
         self.ids['scroll'].ids['scroll'].boxes.add_widget(self.pb)
         return super().on_enter(*args)
         
-    def hook(self, *args):
-        # add progress bar
-        percent = float(args[0]['_percent_str'].split('m')[1].split('%')[0])
-        
-        # debugging
-        # with open('stderr2', 'a') as f:
-        #     f.write("\n"+str(percent))
-        # print(percent)
-
-        if args[0]['status'] == 'downloading':
-            self.pb.value = percent
-            
-        elif args[0]['status'] == 'finished':
-            self.pb.value = 100
-            # delete kids
-            for child in self.ids['scroll'].ids['scroll'].boxes.children:
-                if child != self.pb:
-                    self.ids['scroll'].ids['scroll'].boxes.remove_widget(child)
-        elif args[0]['status'] == 'error':
-            self.pb.value = 0
-        else:
-            self.pb.value = 0
-        
+    
             
 
     def fetchall(self, *args):
@@ -171,15 +221,43 @@ class DownloadScreen(Screen):
     def download(self):
         threading.Thread(target=self.fetchall).start()
 
-
+    def on_leave(self, *args):
+        # clear scrollview
+        self.ids['scroll'].ids['scroll'].boxes.clear_widgets()
+        return super().on_leave(*args)
     
+class DownloadAudioScreen(Screen, Hook):
+    def __init__(self, **kw):
+        super().__init__(**kw)
+
+    async def fetchall(self): # audio version
+        downloads=[]
+        print("Downloading started Audio")
+        # toast("Downloading started \
+        #       Screen will freeze.")
+        for child in self.ids['scroll'].ids['scroll'].boxes.children:
+            if child.text != '':
+                if ' ' in child.text:
+                    for item in child.text.split(' '):
+                        downloads.append(item)
+                else:
+                    downloads.append(child.text)
+                # downloads.append(child.text)
+        MDApp.get_running_app().downloader.download_audio(' '.join(downloads), hook=self.hook)
+        # toast("Download complete")
+        # clear scrollview
+        self.ids['scroll'].ids['scroll'].boxes.clear_widgets()
         
-            
+    def download(self):
+        self.fetchall()
 
     def on_leave(self, *args):
         # clear scrollview
         self.ids['scroll'].ids['scroll'].boxes.clear_widgets()
         return super().on_leave(*args)
+        
+
+
 class AddDatabase(Screen):
     def __init__(self, **kw):
         super().__init__(**kw)
@@ -239,36 +317,7 @@ class HomeScreen(Screen):
         # update details data
         self.details_data[2] = number_missing
         
-class DownloadAudioScreen(Screen):
-    def __init__(self, **kw):
-        super().__init__(**kw)
 
-    async def fetchall(self): # audio version
-        downloads=[]
-        print("Downloading started Audio")
-        # toast("Downloading started \
-        #       Screen will freeze.")
-        for child in self.ids['scroll'].ids['scroll'].boxes.children:
-            if child.text != '':
-                if ' ' in child.text:
-                    for item in child.text.split(' '):
-                        downloads.append(item)
-                else:
-                    downloads.append(child.text)
-                # downloads.append(child.text)
-        MDApp.get_running_app().downloader.download_audio(' '.join(downloads))
-        # toast("Download complete")
-        # clear scrollview
-        self.ids['scroll'].ids['scroll'].boxes.clear_widgets()
-        
-    def download(self):
-        self.fetchall()
-
-    def on_leave(self, *args):
-        # clear scrollview
-        self.ids['scroll'].ids['scroll'].boxes.clear_widgets()
-        return super().on_leave(*args)
-        
 
 class MissingVideoScreen(Screen):
     def __init__(self, **kw):
@@ -321,6 +370,10 @@ class YoutubeGUIApp(MDApp):
         self.settings_cls = SettingsWithSidebar
         # self.config.read('mysettings.ini')
         return self.manager
+    
+    def thread_gui_operations(self, operation):
+        # lets you run threads and update the GUI
+        Clock.schedule_once(operation)
     
     def on_start(self):
         sys.stderr = open('./stderr', 'w')

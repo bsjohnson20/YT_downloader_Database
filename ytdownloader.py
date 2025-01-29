@@ -10,6 +10,15 @@ import asyncio
 from threading import Thread
 
 
+
+class Log:
+    def debug(self, msg):
+        pass#print(msg)
+    def warning(self, msg):
+        pass#print(msg)
+    def error(self, msg):
+        print(msg)
+
 class YoutubeNDatabaseDownloader:
     def __init__(self, user_path='./videos/', database='./videos.db',cookie_file="./cookies",manual=False) -> None:
         # method to check if .env file exists
@@ -59,7 +68,8 @@ class YoutubeNDatabaseDownloader:
             "format": "mp4[height<=720]",
             'outtmpl': f'{self.user_path}/YouTube/%(uploader)s/%(title)s.%(ext)s',
             'cookiesfrombrowser': ('firefox', None, None, None),
-            'verbose' : 'True'
+            'verbose' : 'True',
+            'logger': Log()
         }
         with YoutubeDL(ydl_opts) as ydl:
             ydl._progress_hooks.append(hook)
@@ -125,6 +135,24 @@ class YoutubeNDatabaseDownloader:
         rows = c.fetchall()
         return rows
     
+    def add_db(self,name,channel,url,length):
+        # add to db, check for duplicates 
+        conn = sqlite3.connect(self.database)
+        c = conn.cursor()
+        c.execute("SELECT * FROM videos WHERE url = ?",(url,))
+        rows = c.fetchall()
+        results = len(rows)
+        
+        if results:
+            print(f"{url} already exists in database")
+            return False
+        
+        c.execute("INSERT INTO videos VALUES (?,?,?,?)",(name, channel, url, length))
+        conn.commit()
+        conn.close()
+        return True
+        
+    
     def download_videos(self,urls=[],audio=False,hook=None):
         print(f"Downloading, audio: {audio}")
         # get video/videos list of urls separated by space
@@ -144,15 +172,10 @@ class YoutubeNDatabaseDownloader:
                 # self.download_video(url)
                 while self.status == 'downloading':
                     pass
-            # get video info
+            
             name, channel, url, length = self.get_video_info(url)
-            # add to database
-            conn = sqlite3.connect(self.database)
-            c = conn.cursor()
-            c.execute("INSERT INTO videos VALUES (?,?,?,?)",(name, channel, url, length))
-            conn.commit()
-            conn.close()
-
+            self.add_db(name,channel,url,length)
+          
     def output_database_as_csv(self):
         # export to csv within the same directory as py
         conn = sqlite3.connect(self.database)
@@ -165,6 +188,7 @@ class YoutubeNDatabaseDownloader:
             writer.writerows(rows)
         conn.close()
         print("Exported to videos.csv")
+        
     def change_download_path(self):
         # set working directory
         os.chdir(input("Enter path: "))
@@ -178,11 +202,12 @@ class YoutubeNDatabaseDownloader:
                 url = url.strip()
                 self.download_video(url)
                 name, channel, url, length = self.get_video_info(url)
-                conn = sqlite3.connect(self.database)
-                c = conn.cursor()
-                c.execute("INSERT INTO videos VALUES (?,?,?,?)",(name, channel, url, length))
-                conn.commit()
-                conn.close()
+                success = self.add_db(name,channel,url,length)
+                if success:
+                    print(f"Added {url} to database")
+                else:
+                    print(f"Failed to add {url} to database")
+                
         print("Videos added to database")
 
     def only_add_to_database(self,urls=[]):
@@ -192,19 +217,15 @@ class YoutubeNDatabaseDownloader:
             urls = input("Enter video URL(s): ").split()
         for url in urls:
             name, channel, url, length = self.get_video_info(url)
-            conn = sqlite3.connect(self.database)
-            c = conn.cursor()
+            sucess = self.add_db(name,channel,url,length)
+            if sucess:
+                print(f"Added {url} to database")
+            else:
+                print(f"Failed to add {url} to database")
+            
 
-            # check if url already exists in database
-            c.execute("SELECT * FROM videos WHERE url = ?",(url,))
-            rows = c.fetchall()
-            if rows:
-                print(f"{url} already exists in database")
-                continue
+            
 
-            c.execute("INSERT INTO videos VALUES (?,?,?,?)",(name, channel, url, length))
-            conn.commit()
-            conn.close()
     def set_default_path(self):
         # ask for default path
         path = input("Enter default path: ")
@@ -286,10 +307,12 @@ class YoutubeNDatabaseDownloader:
         conn.close()
         # strip rows of all special characters
         rows = [re.sub(r'[^\w\s]', '', row[0]) for row in rows]
+        videos = [re.sub(r'[^\w\s]', '', video) for video in videos]
         # find missing videos
         missing = []
         for video in videos:
             if video not in rows:
+                print(video, "not in database",rows)
                 missing.append(video)
 
         if missing:
