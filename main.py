@@ -176,22 +176,13 @@ class DownloadScreen(Screen, Hook):
 
     
     def on_enter(self, *args):
-        
-        
-        # create progress bar
-        # self.pb = ProgressBar(max=1000, size_hint=(1, None), height=30, pos_hint={'center_x': 0.5, 'center_y': 0.5})
-        
-        # add progress bar to scrollview
-        
+        # add progress bar       
         self.pb = MDLinearProgressIndicator(max=100, value=0)
         self.pb.size_hint = (1, None)
         self.pb.height = 30
         self.pb.pos_hint = {'center_x': 0.5, 'center_y': 0.5}
         self.ids['scroll'].ids['scroll'].boxes.add_widget(self.pb)
         return super().on_enter(*args)
-        
-    
-            
 
     def fetchall(self, *args):
         print("Video Download Started")
@@ -230,7 +221,16 @@ class DownloadAudioScreen(Screen, Hook):
     def __init__(self, **kw):
         super().__init__(**kw)
 
-    async def fetchall(self): # audio version
+    def on_enter(self, *args):
+        
+        self.pb = MDLinearProgressIndicator(max=100, value=0)
+        self.pb.size_hint = (1, None)
+        self.pb.height = 30
+        self.pb.pos_hint = {'center_x': 0.5, 'center_y': 0.5}
+        self.ids['scroll'].ids['scroll'].boxes.add_widget(self.pb)
+        return super().on_enter(*args)
+
+    def fetchall(self): # audio version
         downloads=[]
         print("Downloading started Audio")
         # toast("Downloading started \
@@ -242,14 +242,17 @@ class DownloadAudioScreen(Screen, Hook):
                         downloads.append(item)
                 else:
                     downloads.append(child.text)
+                    print("Added",child.text)
                 # downloads.append(child.text)
-        MDApp.get_running_app().downloader.download_audio(' '.join(downloads), hook=self.hook)
+        print(f"Audio begun Downloading: {downloads}")
+        MDApp.get_running_app().downloader.download_videos(downloads, audio=True, hook=self.hook)
         # toast("Download complete")
         # clear scrollview
         self.ids['scroll'].ids['scroll'].boxes.clear_widgets()
         
     def download(self):
-        self.fetchall()
+        threading.Thread(target=self.fetchall).start()
+
 
     def on_leave(self, *args):
         # clear scrollview
@@ -415,7 +418,7 @@ if __name__ == "__main__":
     if runAsync:
         loop = asyncio.get_event_loop()
         loop.run_until_complete(async_runTouchApp(YoutubeGUIApp().run()))
-        loop.close()
+        loop.close() # TODO doesn't close properly, exit should well... Exit
     else:
         YoutubeGUIApp().run()
     # downloader = YoutubeNDatabaseDownloader()

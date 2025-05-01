@@ -163,13 +163,12 @@ class YoutubeNDatabaseDownloader:
             # download 
             self.status = 'downloading'
             if audio:
-                
+                print("Downloading audio now")
                 asyncio.run(self.download_audio(url,hook=hook))
                 while self.status == 'downloading':
                     pass
             else:
                 asyncio.run(self.download_video(url,hook=hook))
-                # self.download_video(url)
                 while self.status == 'downloading':
                     pass
             
