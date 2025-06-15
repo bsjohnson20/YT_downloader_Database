@@ -86,6 +86,8 @@ This is a YT Downloader GUI wrapper that utilises Kivy and KivyMD to provide a u
 
 It uses YT-DLP on the backend and thus can be used on more than just youtube. The data from YT-DLP is stored in a sqlite database for cataloging and archiving purposes.
 
+<bold>Recent change: </bold> Using async and threading in sections in branch "async", needs to be cleaned, and not have a mix of threading / async, I'm not too confident on either though.
+
 
 [![YT Downloader DB Screen Shot][product-screenshot]]
 

@@ -13,3 +13,4 @@ videos.db
 videos/
 Youtube/
 __pycache__/
+*.mp4
